@@ -1,11 +1,12 @@
 from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer
+
 
 # 1. Define a Serializer for Registration
 
@@ -50,3 +51,12 @@ class LoginView(APIView):
             {"detail": "No active account found with the given credentials"}, 
             status=status.HTTP_401_UNAUTHORIZED
         )
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get (self, request):
+        user = request.user 
+        return Response({
+            "user": request.user.username
+        })

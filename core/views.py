@@ -60,3 +60,52 @@ class ProfileView(APIView):
         return Response({
             "user": request.user.username
         })
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            refresh_token = request.data.get("refresh")
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # 🔥 blacklist token
+
+            return Response({"message": "Logged out successfully"})
+
+        except Exception:
+            return Response(
+                {"error": "Invalid token"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+class UpdateProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request):
+        user = request.user
+
+        username = request.data.get("username")
+        password = request.data.get("password")
+
+        if username:
+            user.username = username
+
+        if password:
+            user.set_password(password)  # important (hashing)
+
+        user.save()
+
+        return Response({
+            "message": "Profile updated successfully",
+            "username": user.username
+        })
+class DeleteAccountView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request):
+        user = request.user
+        user.delete()
+
+        return Response({
+            "message": "Account deleted successfully"
+        }, status=200)

@@ -11,4 +11,5 @@ urlpatterns = [
     path('logout/', views.LogoutView.as_view(), name= 'logout'),
     path('update/', views.UpdateProfileView.as_view()),
     path('delete/', views.DeleteAccountView.as_view()),
+    path('verify/', views.VerifyOTPView.as_view()),
 ]

@@ -3,12 +3,7 @@ from .models import Product
 from django.contrib.auth.models import User
 
 
-class ProductSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Product
-        fields = ['id', 'user', 'name', 'price', 'description']
-        read_only_fields = ['user']
-        
+
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 

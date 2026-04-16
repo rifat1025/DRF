@@ -11,6 +11,7 @@ import random
 from django.core.mail import send_mail
 from . models import Profile
 from django.conf import settings
+from django.utils import timezone
 
 # 1. Define a Serializer for Registration
 
@@ -160,3 +161,60 @@ class VerifyOTPView(APIView):
 
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
+        
+
+class ForgotPasswordView(APIView):
+    
+    def post(self, request):
+        email = request.data.get('email')
+        
+        try:
+            profile = Profile.objects.get(email=email)
+            otp = str ( random. randint(100000, 999999) )
+            
+            profile.otp = otp
+            profile . save()
+            
+            send_mail(
+                "Password Reset OTP",
+                f"Your OTP is {otp}",
+                settings.EMAIL_HOST_USER,
+                [email],
+                fail_silently=False,
+            )
+
+            return Response({"message": "OTP sent to email"})
+
+        except Profile.DoesNotExist:
+            return Response({"error": "Email not found"}, status=404)
+
+
+class ResetPasswordView(APIView):
+    
+    def post(self, request):
+        
+        email = request.data.get('email')
+        otp = request.data.get('otp')
+        new_password = request.data.get('new_password')
+        
+        
+        try:
+            profile = Profile.objects.get(email= email)
+            
+            if profile.otp != otp:
+                return Response({"error": "Invalid OTP"}, status=400)
+            
+            if timezone.now() > profile.otp_created_at + timedelta(minutes=5):
+                return Response({"error": "OTP expired"}, status=400)
+
+            user = profile.user
+            user.set_password(new_password)
+            user.save()
+            profile.otp = None
+            profile.save()
+
+            return Response({"message": "Password reset successful"})
+
+        except Profile.DoesNotExist:
+            return Response({"error": "Email not found"}, status=404)
+                

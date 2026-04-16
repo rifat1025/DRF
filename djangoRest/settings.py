@@ -126,7 +126,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+##  below section is for rest framework and jwt authentication
 from datetime import timedelta
 
 REST_FRAMEWORK = {

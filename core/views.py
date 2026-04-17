@@ -12,6 +12,7 @@ from django.core.mail import send_mail
 from . models import Profile
 from django.conf import settings
 from django.utils import timezone
+from .models import Product
 
 # 1. Define a Serializer for Registration
 
@@ -217,4 +218,77 @@ class ResetPasswordView(APIView):
 
         except Profile.DoesNotExist:
             return Response({"error": "Email not found"}, status=404)
-                
+
+
+class ProductView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get( self, request):
+       
+        products = Product.objects.all().values()
+        return Response(products)
+    
+    def post (self, request):
+        
+        p_image = request.FILES.get('product_image')
+        name = request. data.get('name')
+        price = request.data.get('price')
+        description = request.data.get('description', '')
+        
+        product = Product.objects.create(
+            user = request.user,
+            name = name,
+            price = price,
+            description = description
+            
+            
+        )
+        return Response({
+            "message": "Product created",
+            "product": {
+                "id": product.id,
+                "name": product.name,
+                "price": product.price,
+                "description": product.description,
+                "created_At": product.created_At
+            }  } )
+    
+    
+class ProductDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, pk):
+        try:
+            product = Product.objects.get(id=pk)
+            return Response({
+                "id": product.id,
+                "image": product.product_image.url if product.product_image else None,
+                "name": product.name,
+                "price": product.price,
+                "description": product.description,
+                "created_At": product.created_At
+            })
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+    def put(self, request, pk):
+        try:
+            product = Product.objects.get(id=pk, user=request.user)
+        except Product.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+        product.product_image = request.FILES.get('product_image', product.product_image)
+
+        product.name = request.data.get("name", product.name)
+        product.description = request.data.get("description", product.description)
+        product.price = request.data.get("price", product.price)
+        product.save()
+
+        return Response({"message": "Product updated"})
+
+    def delete(self, request, pk):
+        try:
+            product = Product.objects.get(id=pk, user=request.user)
+        except Product.DoesNotExist:
+            return Response({"error": "Not found"}, status=404)
+
+        product.delete()
+        return Response({"message": "Product deleted"})

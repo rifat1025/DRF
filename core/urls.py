@@ -14,4 +14,6 @@ urlpatterns = [
     path('verify/', views.VerifyOTPView.as_view(), name='verify_otp'),
     path('forgot-password/',views.ForgotPasswordView.as_view(), name='forgot_password'),
     path('reset-password/', views.ResetPasswordView.as_view(), name='reset_password'),
+    path('products/', views.ProductView.as_view()),
+    path('products/<int:pk>/', views.ProductDetailView.as_view()),
 ]
